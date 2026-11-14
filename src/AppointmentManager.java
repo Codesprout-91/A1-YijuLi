@@ -47,7 +47,8 @@ public class AppointmentManager {
     public static List<LocalTime> createDefaultSchedule() {
         List<LocalTime> slots = new ArrayList<>();
         LocalTime slot = CLINIC_OPEN;
-        // The final 16:00 slot is included because the brief gives that boundary.
+        // Treat 16:00 as the final 30-minute start, as listed by the brief.
+        // A clinic that means "closes at 16:00" can pass a custom schedule.
         while (!slot.isAfter(CLINIC_CLOSE)) {
             slots.add(slot);
             slot = slot.plusMinutes(SLOT_INTERVAL_MINUTES);
@@ -286,10 +287,6 @@ public class AppointmentManager {
             if (time == null) {
                 throw new IllegalArgumentException(
                         "The daily schedule cannot contain null.");
-            }
-            if (time.isBefore(CLINIC_OPEN) || time.isAfter(CLINIC_CLOSE)) {
-                throw new IllegalArgumentException(
-                        "Schedule times must be between 08:00 and 16:00.");
             }
             if (validated.contains(time)) {
                 throw new IllegalArgumentException(

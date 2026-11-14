@@ -138,9 +138,10 @@ public abstract class HealthProfessional {
 
     private static String requireNumericId(String value) {
         String validated = requireText(value, "ID");
-        // Character.isDigit supports the brief's "numbers only" requirement.
+        // Restrict IDs to ASCII digits rather than Unicode numeral characters.
         for (int index = 0; index < validated.length(); index++) {
-            if (!Character.isDigit(validated.charAt(index))) {
+            char character = validated.charAt(index);
+            if (character < '0' || character > '9') {
                 throw new IllegalArgumentException(
                         "ID must contain numbers only.");
             }
