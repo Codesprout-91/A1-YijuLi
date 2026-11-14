@@ -1,4 +1,5 @@
 import java.time.DayOfWeek;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
@@ -13,9 +14,9 @@ import java.util.List;
  * the clinic changes its hours or when a smaller schedule is used in a test.</p>
  */
 public class AppointmentManager {
-    private static final LocalTime CLINIC_OPEN = LocalTime.of(8, 0);
-    private static final LocalTime CLINIC_CLOSE = LocalTime.of(16, 0);
-    private static final int SLOT_INTERVAL_MINUTES = 30;
+    private static final LocalTime DEFAULT_FIRST_SLOT = LocalTime.of(8, 0);
+    private static final LocalTime DEFAULT_LAST_SLOT = LocalTime.of(16, 0);
+    private static final int DEFAULT_SLOT_INTERVAL_MINUTES = 30;
 
     private final List<Appointment> appointments;
     private final List<LocalTime> dailySchedule;
@@ -24,7 +25,24 @@ public class AppointmentManager {
      * Creates a manager with the clinic's default schedule.
      */
     public AppointmentManager() {
-        this(createDefaultSchedule());
+        this(
+                DEFAULT_FIRST_SLOT,
+                DEFAULT_LAST_SLOT,
+                DEFAULT_SLOT_INTERVAL_MINUTES);
+    }
+
+    /**
+     * Creates a manager with a regular schedule generated from three values.
+     *
+     * @param firstSlot first bookable time
+     * @param lastSlot last bookable time; included in the schedule
+     * @param intervalMinutes minutes between adjacent slots
+     */
+    public AppointmentManager(
+            LocalTime firstSlot,
+            LocalTime lastSlot,
+            int intervalMinutes) {
+        this(createSchedule(firstSlot, lastSlot, intervalMinutes));
     }
 
     /**
@@ -40,18 +58,57 @@ public class AppointmentManager {
     }
 
     /**
-     * Returns the clinic's standard 08:00 to 16:00 half-hour schedule.
+     * Returns the clinic's default 08:00 to 16:00 half-hour schedule.
      *
      * @return the default schedule
      */
     public static List<LocalTime> createDefaultSchedule() {
+        return createSchedule(
+                DEFAULT_FIRST_SLOT,
+                DEFAULT_LAST_SLOT,
+                DEFAULT_SLOT_INTERVAL_MINUTES);
+    }
+
+    /**
+     * Generates a regular schedule.
+     *
+     * <p>The last slot is inclusive. For example, 09:00 to 11:00 with a
+     * 30-minute interval produces 09:00, 09:30, 10:00, 10:30, and 11:00.</p>
+     *
+     * @param firstSlot first bookable time
+     * @param lastSlot last bookable time; included in the schedule
+     * @param intervalMinutes minutes between adjacent slots
+     * @return a new list of generated time slots
+     */
+    public static List<LocalTime> createSchedule(
+            LocalTime firstSlot,
+            LocalTime lastSlot,
+            int intervalMinutes) {
+        if (firstSlot == null || lastSlot == null) {
+            throw new IllegalArgumentException(
+                    "The first and last slots are required.");
+        }
+        if (intervalMinutes <= 0) {
+            throw new IllegalArgumentException(
+                    "The slot interval must be greater than zero.");
+        }
+        if (lastSlot.isBefore(firstSlot)) {
+            throw new IllegalArgumentException(
+                    "The last slot cannot be before the first slot.");
+        }
+
+        long durationMinutes =
+                Duration.between(firstSlot, lastSlot).toMinutes();
+        if (durationMinutes % intervalMinutes != 0) {
+            throw new IllegalArgumentException(
+                    "The last slot must align with the slot interval.");
+        }
+
         List<LocalTime> slots = new ArrayList<>();
-        LocalTime slot = CLINIC_OPEN;
-        // Treat 16:00 as the final 30-minute start, as listed by the brief.
-        // A clinic that means "closes at 16:00" can pass a custom schedule.
-        while (!slot.isAfter(CLINIC_CLOSE)) {
+        LocalTime slot = firstSlot;
+        while (!slot.isAfter(lastSlot)) {
             slots.add(slot);
-            slot = slot.plusMinutes(SLOT_INTERVAL_MINUTES);
+            slot = slot.plusMinutes(intervalMinutes);
         }
         return slots;
     }
