@@ -1,5 +1,4 @@
-import java.time.DayOfWeek;
-import java.util.Set;
+import java.util.ArrayList;
 
 /**
  * Represents a medical specialist who focuses on a particular field.
@@ -18,7 +17,7 @@ public class Specialist extends HealthProfessional {
     public Specialist(
             String id,
             String name,
-            Set<DayOfWeek> availableDays,
+            ArrayList<String> availableDays,
             String medicalSpecialty) {
         super(id, name, availableDays);
         this.medicalSpecialty =

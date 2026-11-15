@@ -1,5 +1,4 @@
-import java.time.DayOfWeek;
-import java.util.Set;
+import java.util.ArrayList;
 
 /**
  * Represents a nurse who supports patient care and clinical procedures.
@@ -18,7 +17,7 @@ public class Nurse extends HealthProfessional {
     public Nurse(
             String id,
             String name,
-            Set<DayOfWeek> availableDays,
+            ArrayList<String> availableDays,
             String qualification) {
         super(id, name, availableDays);
         this.qualification = requireText(qualification, "Qualification");

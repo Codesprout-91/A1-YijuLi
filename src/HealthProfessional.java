@@ -1,19 +1,15 @@
-import java.time.DayOfWeek;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.Set;
+import java.util.ArrayList;
 
 /**
- * Represents the information and behaviour shared by all health professionals.
- * The class is abstract because every actual professional must have a specialty.
+ * Represents the state and behaviour shared by all health professionals.
  */
-public abstract class HealthProfessional {
+public abstract class HealthProfessional implements Comparable<HealthProfessional> {
     private final String id;
     private final String name;
-    private final Set<DayOfWeek> availableDays;
+    private final ArrayList<String> availableDays;
 
     /**
-     * Creates a fully specified health professional.
+     * Creates a professional with an explicit list of working days.
      *
      * @param id numeric professional identifier
      * @param name professional's name
@@ -22,31 +18,26 @@ public abstract class HealthProfessional {
     protected HealthProfessional(
             String id,
             String name,
-            Set<DayOfWeek> availableDays) {
+            ArrayList<String> availableDays) {
         this.id = requireNumericId(id);
         this.name = requireText(name, "Name");
-        // A copied, unmodifiable set protects the object's internal state.
         this.availableDays = copyAndValidateDays(availableDays);
     }
 
     /**
-     * Creates a professional using the default working days of Monday,
-     * Wednesday, and Friday.
+     * Creates a professional who works Monday, Wednesday, and Friday.
      *
      * @param id numeric professional identifier
      * @param name professional's name
      */
     protected HealthProfessional(String id, String name) {
-        this(id, name, EnumSet.of(
-                DayOfWeek.MONDAY,
-                DayOfWeek.WEDNESDAY,
-                DayOfWeek.FRIDAY));
+        this(id, name, createMondayWednesdayFriday());
     }
 
     /**
-     * Returns the professional's numeric identifier.
+     * Returns the numeric professional ID.
      *
-     * @return the identifier
+     * @return the professional ID
      */
     public final String getId() {
         return id;
@@ -62,37 +53,95 @@ public abstract class HealthProfessional {
     }
 
     /**
-     * Returns an unmodifiable set of the professional's working days.
+     * Returns a defensive copy of the working days.
      *
-     * @return the available working days
+     * @return a new working-day list
      */
-    public final Set<DayOfWeek> getAvailableDays() {
-        return availableDays;
+    public final ArrayList<String> getAvailableDays() {
+        return new ArrayList<String>(availableDays);
     }
 
     /**
-     * Returns a readable name for the professional type.
+     * Checks whether the professional works on a supplied day.
      *
-     * @return the professional type
+     * @param day day to check
+     * @return true when the professional works that day
+     */
+    public final boolean worksOn(String day) {
+        return availableDays.contains(ClinicSchedule.normalizeDay(day));
+    }
+
+    /**
+     * Returns the professional type.
+     *
+     * @return readable type
      */
     public abstract String getProfessionalType();
 
     /**
-     * Performs the main duty associated with this professional type.
+     * Performs the professional's primary role.
      *
-     * @return a description of the completed duty
+     * @return duty result
      */
     public abstract String performPrimaryDuty();
 
     /**
-     * Returns the details that are unique to a concrete professional type.
+     * Returns subtype-specific details.
      *
-     * @return the type-specific details
+     * @return type-specific information
      */
     protected abstract String getTypeSpecificDetails();
 
+    /**
+     * Compares professionals by numeric ID.
+     *
+     * @param other professional to compare with
+     * @return ID comparison result
+     */
     @Override
-    public final String toString() {
+    public int compareTo(HealthProfessional other) {
+        if (other == null) {
+            throw new IllegalArgumentException(
+                    "Cannot compare with null.");
+        }
+        return id.compareTo(other.id);
+    }
+
+    /**
+     * Compares professionals by ID.
+     *
+     * @param other object to compare with
+     * @return true when both IDs match
+     */
+    @Override
+    public boolean equals(Object other) {
+        if (this == other) {
+            return true;
+        }
+        if (!(other instanceof HealthProfessional)) {
+            return false;
+        }
+        HealthProfessional professional = (HealthProfessional) other;
+        return id.equals(professional.id);
+    }
+
+    /**
+     * Returns a hash code consistent with equals.
+     *
+     * @return ID hash code
+     */
+    @Override
+    public int hashCode() {
+        return id.hashCode();
+    }
+
+    /**
+     * Returns all common and type-specific professional details.
+     *
+     * @return formatted professional details
+     */
+    @Override
+    public String toString() {
         return getProfessionalType()
                 + System.lineSeparator()
                 + "  ID: " + id
@@ -104,41 +153,64 @@ public abstract class HealthProfessional {
                 + "  " + getTypeSpecificDetails();
     }
 
-    @Override
-    public final boolean equals(Object other) {
-        if (this == other) {
-            return true;
-        }
-        if (!(other instanceof HealthProfessional)) {
-            return false;
-        }
-        HealthProfessional professional = (HealthProfessional) other;
-        // The ID represents the professional's identity across all role types.
-        return id.equals(professional.id);
-    }
-
-    @Override
-    public final int hashCode() {
-        return id.hashCode();
-    }
-
     /**
-     * Validates text commonly supplied to a health professional object.
+     * Validates and trims required text.
      *
      * @param value text to validate
-     * @param fieldName name used in an error message
+     * @param fieldName field name used in an error
      * @return trimmed text
      */
     protected static String requireText(String value, String fieldName) {
         if (value == null || value.trim().isEmpty()) {
-            throw new IllegalArgumentException(fieldName + " cannot be blank.");
+            throw new IllegalArgumentException(
+                    fieldName + " cannot be blank.");
         }
         return value.trim();
     }
 
+    /**
+     * Creates the default Monday-to-Friday working days.
+     *
+     * @return default working days
+     */
+    protected static ArrayList<String> createWeekdays() {
+        ArrayList<String> days = new ArrayList<String>();
+        days.add(ClinicSchedule.MONDAY);
+        days.add(ClinicSchedule.TUESDAY);
+        days.add(ClinicSchedule.WEDNESDAY);
+        days.add(ClinicSchedule.THURSDAY);
+        days.add(ClinicSchedule.FRIDAY);
+        return days;
+    }
+
+    /**
+     * Creates a Monday, Wednesday, Friday working-day list.
+     *
+     * @return Monday, Wednesday, Friday list
+     */
+    protected static ArrayList<String> createMondayWednesdayFriday() {
+        ArrayList<String> days = new ArrayList<String>();
+        days.add(ClinicSchedule.MONDAY);
+        days.add(ClinicSchedule.WEDNESDAY);
+        days.add(ClinicSchedule.FRIDAY);
+        return days;
+    }
+
+    /**
+     * Creates a Monday, Thursday, Friday working-day list.
+     *
+     * @return Monday, Thursday, Friday list
+     */
+    protected static ArrayList<String> createMondayThursdayFriday() {
+        ArrayList<String> days = new ArrayList<String>();
+        days.add(ClinicSchedule.MONDAY);
+        days.add(ClinicSchedule.THURSDAY);
+        days.add(ClinicSchedule.FRIDAY);
+        return days;
+    }
+
     private static String requireNumericId(String value) {
         String validated = requireText(value, "ID");
-        // Restrict IDs to ASCII digits rather than Unicode numeral characters.
         for (int index = 0; index < validated.length(); index++) {
             char character = validated.charAt(index);
             if (character < '0' || character > '9') {
@@ -149,30 +221,36 @@ public abstract class HealthProfessional {
         return validated;
     }
 
-    private static Set<DayOfWeek> copyAndValidateDays(
-            Set<DayOfWeek> days) {
+    private static ArrayList<String> copyAndValidateDays(
+            ArrayList<String> days) {
         if (days == null || days.isEmpty()) {
             throw new IllegalArgumentException(
                     "At least one available day is required.");
         }
-        if (days.contains(null)) {
-            throw new IllegalArgumentException(
-                    "Available days cannot contain null.");
+
+        ArrayList<String> validated = new ArrayList<String>();
+        for (int index = 0; index < days.size(); index++) {
+            String normalizedDay =
+                    ClinicSchedule.normalizeDay(days.get(index));
+            if (!ClinicSchedule.isValidDay(normalizedDay)) {
+                throw new IllegalArgumentException(
+                        "Invalid available day: " + days.get(index));
+            }
+            if (!validated.contains(normalizedDay)) {
+                validated.add(normalizedDay);
+            }
         }
-        // EnumSet prevents duplicate days; unmodifiableSet prevents later changes.
-        return Collections.unmodifiableSet(EnumSet.copyOf(days));
+        return validated;
     }
 
     private String formatAvailableDays() {
-        StringBuilder result = new StringBuilder();
-        for (DayOfWeek day : DayOfWeek.values()) {
-            if (availableDays.contains(day)) {
-                if (result.length() > 0) {
-                    result.append(", ");
-                }
-                result.append(day);
+        String result = "";
+        for (int index = 0; index < availableDays.size(); index++) {
+            if (index > 0) {
+                result += ", ";
             }
+            result += availableDays.get(index);
         }
-        return result.toString();
+        return result;
     }
 }

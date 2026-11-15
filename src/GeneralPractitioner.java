@@ -1,5 +1,4 @@
-import java.time.DayOfWeek;
-import java.util.Set;
+import java.util.ArrayList;
 
 /**
  * Represents a general practitioner who provides first-contact medical care.
@@ -18,7 +17,7 @@ public class GeneralPractitioner extends HealthProfessional {
     public GeneralPractitioner(
             String id,
             String name,
-            Set<DayOfWeek> availableDays,
+            ArrayList<String> availableDays,
             String clinicRoom) {
         super(id, name, availableDays);
         this.clinicRoom = requireText(clinicRoom, "Clinic room");

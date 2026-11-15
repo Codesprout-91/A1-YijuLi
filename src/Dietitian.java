@@ -1,5 +1,4 @@
-import java.time.DayOfWeek;
-import java.util.Set;
+import java.util.ArrayList;
 
 /**
  * Represents a dietitian who provides nutrition assessment and advice.
@@ -18,7 +17,7 @@ public class Dietitian extends HealthProfessional {
     public Dietitian(
             String id,
             String name,
-            Set<DayOfWeek> availableDays,
+            ArrayList<String> availableDays,
             String nutritionSpecialty) {
         super(id, name, availableDays);
         this.nutritionSpecialty =

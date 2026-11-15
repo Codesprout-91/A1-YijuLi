@@ -80,12 +80,12 @@ public class Patient {
                     "Mobile phone number cannot be blank.");
         }
 
-        StringBuilder digits = new StringBuilder();
+        String digits = "";
         // Ignore only common separators; any other letter or symbol is rejected.
         for (int index = 0; index < value.length(); index++) {
             char character = value.charAt(index);
-            if (Character.isDigit(character)) {
-                digits.append(character);
+            if (character >= '0' && character <= '9') {
+                digits += character;
             } else if (character != ' ' && character != '-') {
                 throw new IllegalArgumentException(
                         "Mobile phone number may contain digits, spaces, "
@@ -94,10 +94,10 @@ public class Patient {
         }
 
         // Store one standard format so searches do not depend on how input was typed.
-        if (digits.length() != 10 || digits.charAt(0) != '0') {
+        if (digits.length() != 10 || !digits.startsWith("04")) {
             throw new IllegalArgumentException(
-                    "Mobile phone number must contain 10 digits and start with 0.");
+                    "Mobile phone number must contain 10 digits and start with 04.");
         }
-        return digits.toString();
+        return digits;
     }
 }

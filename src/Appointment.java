@@ -1,24 +1,22 @@
-import java.time.LocalTime;
-
 /**
  * Links a patient to a health professional at a specific appointment time.
  */
 public class Appointment implements Comparable<Appointment> {
     private final Patient patient;
     private final HealthProfessional healthProfessional;
-    private final LocalTime appointmentTime;
+    private final TimeSlot appointmentTime;
 
     /**
      * Creates a complete appointment.
      *
      * @param patient patient attending the appointment
      * @param healthProfessional professional providing the service
-     * @param appointmentTime appointment start time
+     * @param appointmentTime appointment start time from the fixed schedule
      */
     public Appointment(
             Patient patient,
             HealthProfessional healthProfessional,
-            LocalTime appointmentTime) {
+            TimeSlot appointmentTime) {
         if (patient == null) {
             throw new IllegalArgumentException("A patient is required.");
         }
@@ -29,6 +27,10 @@ public class Appointment implements Comparable<Appointment> {
         if (appointmentTime == null) {
             throw new IllegalArgumentException(
                     "An appointment time is required.");
+        }
+        if (!ClinicSchedule.isScheduledSlot(appointmentTime)) {
+            throw new IllegalArgumentException(
+                    "The selected time is not in the clinic schedule.");
         }
 
         this.patient = patient;
@@ -59,7 +61,7 @@ public class Appointment implements Comparable<Appointment> {
      *
      * @return the appointment time
      */
-    public LocalTime getAppointmentTime() {
+    public TimeSlot getAppointmentTime() {
         return appointmentTime;
     }
 

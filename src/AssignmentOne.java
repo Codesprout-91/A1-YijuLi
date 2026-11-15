@@ -1,29 +1,21 @@
-import java.time.DayOfWeek;
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Set;
+import java.util.ArrayList;
 
 /**
- * Runs a scripted demonstration of the health appointment system.
- *
- * <p>Design note: professionals and booking requests are stored in arrays and
- * processed with loops. Adding another professional type or appointment only
- * requires a new object, not a new block of repeated console code. Keyboard
- * input is intentionally not added because the assessment asks for a scripted
- * main-method demonstration rather than a menu-driven application.</p>
+ * Runs the scripted demonstration for Assessment 1.
  */
 public class AssignmentOne {
+    private AssignmentOne() {
+        // This class is used through its static main method.
+    }
+
     /**
-     * Starts the complete appointment-system demonstration.
+     * Runs the complete appointment-system demonstration.
      *
-     * @param args command-line arguments; not used
+     * @param args command-line arguments, which are not used
      */
     public static void main(String[] args) {
-        printSection("PART 3 - HEALTH PROFESSIONALS");
+        ArrayList<String> workingDays = createCurrentWorkingDays();
 
-        Set<DayOfWeek> workingDays = currentWorkingDays();
         GeneralPractitioner gpOne = new GeneralPractitioner(
                 "1001", "Dr Amelia Chen", workingDays, "Room 101");
         GeneralPractitioner gpTwo = new GeneralPractitioner(
@@ -36,14 +28,15 @@ public class AssignmentOne {
                 "3001", "Olivia Brown", workingDays, "Sports Nutrition");
         Specialist specialist = new Specialist(
                 "4001", "Dr Liam Nguyen", workingDays, "Paediatrics");
-        DayOfWeek tomorrow = LocalDate.now().getDayOfWeek().plus(1);
+
+        ArrayList<String> unavailableDays = new ArrayList<String>();
+        unavailableDays.add(ClinicSchedule.TUESDAY);
         Specialist unavailableSpecialist = new Specialist(
                 "4002",
                 "Dr Jordan Lee",
-                EnumSet.of(tomorrow),
+                unavailableDays,
                 "Dermatology");
 
-        // The base type lets the loop process any current or future professional type.
         HealthProfessional[] professionals = {
                 gpOne,
                 gpTwo,
@@ -53,11 +46,17 @@ public class AssignmentOne {
                 specialist,
                 unavailableSpecialist
         };
-        displayProfessionals(professionals);
+
+        printSection("PART 3 - HEALTH PROFESSIONALS");
+        for (int index = 0; index < professionals.length; index++) {
+            System.out.println(professionals[index]);
+            System.out.println();
+        }
 
         printSection("POLYMORPHIC PROFESSIONAL BEHAVIOUR");
-        for (HealthProfessional professional : professionals) {
-            System.out.println("- " + professional.performPrimaryDuty());
+        for (int index = 0; index < professionals.length; index++) {
+            System.out.println(
+                    "- " + professionals[index].performPrimaryDuty());
         }
 
         Patient alice = new Patient("Alice Johnson", "0412 345 678");
@@ -68,19 +67,19 @@ public class AssignmentOne {
 
         AppointmentManager manager = new AppointmentManager();
 
-        printSection("PART 4 - APPOINTMENTS ACROSS PROFESSIONAL TYPES");
+        printSection("PART 4 AND 5 - ADD APPOINTMENTS");
         Appointment[] bookingRequests = {
-                new Appointment(alice, gpOne, LocalTime.of(9, 0)),
-                new Appointment(ben, gpTwo, LocalTime.of(10, 30)),
-                new Appointment(chloe, nurse, LocalTime.of(9, 0)),
-                new Appointment(daniel, dietitian, LocalTime.of(11, 0)),
-                new Appointment(ella, specialist, LocalTime.of(13, 30)),
-                new Appointment(alice, gpThree, LocalTime.of(15, 0))
+                new Appointment(alice, gpOne, new TimeSlot(9, 0)),
+                new Appointment(ben, gpTwo, new TimeSlot(10, 30)),
+                new Appointment(chloe, nurse, new TimeSlot(9, 0)),
+                new Appointment(daniel, dietitian, new TimeSlot(11, 0)),
+                new Appointment(ella, specialist, new TimeSlot(13, 30)),
+                new Appointment(alice, gpThree, new TimeSlot(15, 0))
         };
 
-        // A loop makes this easy to extend with more sample bookings.
-        for (Appointment booking : bookingRequests) {
-            System.out.println(manager.addAppointment(booking));
+        for (int index = 0; index < bookingRequests.length; index++) {
+            System.out.println(
+                    manager.addAppointment(bookingRequests[index]));
         }
 
         printSection("PART 5 - ALL APPOINTMENTS SORTED BY TIME");
@@ -88,70 +87,63 @@ public class AssignmentOne {
                 manager.getAllAppointmentsSorted()));
 
         printSection("FILTER BY HEALTH PROFESSIONAL ID 1001");
-        List<Appointment> filteredByProfessional =
-                manager.getAppointmentsByProfessional(gpOne.getId());
-        System.out.println(manager.displayAppointments(filteredByProfessional));
+        System.out.println(manager.displayAppointments(
+                manager.getAppointmentsByProfessional(gpOne.getId())));
 
         printSection("FILTER BY PATIENT PHONE 0412 345 678");
-        List<Appointment> filteredByPatient =
-                manager.getAppointmentsByPatientPhone(alice.getMobilePhone());
-        System.out.println(manager.displayAppointments(filteredByPatient));
+        System.out.println(manager.displayAppointments(
+                manager.getAppointmentsByPatientPhone(
+                        alice.getMobilePhone())));
 
-        printSection("FILTER WITH NO MATCHING APPOINTMENTS");
+        printSection("WARNING - FILTER WITH NO MATCHING APPOINTMENTS");
         System.out.println(manager.displayAppointments(
                 manager.getAppointmentsByPatientPhone("0499999999")));
 
         printSection("PART 6 - ERROR CASES");
         Patient duplicatePatient =
                 new Patient("Duplicate Request", "0467 890 123");
-        System.out.println(manager.addAppointment(new Appointment(
-                duplicatePatient,
-                gpOne,
-                LocalTime.of(9, 0))));
+        System.out.println(manager.addAppointment(
+                new Appointment(
+                        duplicatePatient,
+                        gpOne,
+                        new TimeSlot(9, 0))));
+        System.out.println(manager.cancelAppointment(
+                "9999",
+                new TimeSlot(14, 0)));
 
-        printSection("UNAVAILABLE PROFESSIONAL");
+        printSection("WARNING - PROFESSIONAL DOES NOT WORK TODAY");
         Patient unavailablePatient =
                 new Patient("Unavailable Request", "0467 888 123");
-        System.out.println(manager.addAppointment(new Appointment(
-                unavailablePatient,
-                unavailableSpecialist,
-                LocalTime.of(12, 0))));
-
-        System.out.println(
-                manager.cancelAppointment("9999", LocalTime.of(14, 0)));
+        System.out.println(manager.addAppointment(
+                new Appointment(
+                        unavailablePatient,
+                        unavailableSpecialist,
+                        new TimeSlot(12, 0))));
 
         printSection("CANCEL BY PROFESSIONAL ID AND TIME");
-        System.out.println(
-                manager.cancelAppointment(gpTwo.getId(), LocalTime.of(10, 30)));
+        System.out.println(manager.cancelAppointment(
+                gpTwo.getId(),
+                new TimeSlot(10, 30)));
 
         printSection("CANCEL BY PATIENT PHONE");
-        System.out.println(
-                manager.cancelAppointment(alice.getMobilePhone()));
+        System.out.println(manager.cancelAppointment(
+                daniel.getMobilePhone()));
 
         printSection("UPDATED APPOINTMENT COLLECTION");
         System.out.println(manager.displayAppointments(
                 manager.getAllAppointmentsSorted()));
         System.out.println();
-        System.out.println("Active appointments: "
-                + manager.getAppointmentCount());
+        System.out.println(
+                "Active appointments: " + manager.getAppointmentCount());
     }
 
-    private static Set<DayOfWeek> currentWorkingDays() {
-        DayOfWeek today = LocalDate.now().getDayOfWeek();
-        // Include today so the scripted demonstration always has valid bookings.
-        return EnumSet.of(
-                today,
-                DayOfWeek.MONDAY,
-                DayOfWeek.WEDNESDAY,
-                DayOfWeek.FRIDAY);
-    }
-
-    private static void displayProfessionals(
-            HealthProfessional[] professionals) {
-        for (HealthProfessional professional : professionals) {
-            System.out.println(professional);
-            System.out.println();
-        }
+    private static ArrayList<String> createCurrentWorkingDays() {
+        ArrayList<String> days = new ArrayList<String>();
+        days.add(ClinicSchedule.getCurrentDay());
+        days.add(ClinicSchedule.MONDAY);
+        days.add(ClinicSchedule.WEDNESDAY);
+        days.add(ClinicSchedule.FRIDAY);
+        return days;
     }
 
     private static void printSection(String title) {
