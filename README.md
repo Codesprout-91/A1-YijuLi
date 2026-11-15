@@ -2,6 +2,8 @@
 
 PROG2004 Object Oriented Programming - Assessment 1
 
+Repository: https://github.com/Codesprout-91/A1-YijuLi
+
 This project is a console-based health appointment system written in Java. It
 demonstrates object-oriented design without a graphical interface, database,
 login system, menu, or external library.
@@ -53,7 +55,7 @@ From the repository root:
 
 ```powershell
 $sources = (Get-ChildItem src\*.java).FullName
-javac -d bin $sources
+javac --release 17 -Xlint:all -Werror -d bin $sources
 java -cp bin AssignmentOne
 ```
 
@@ -173,7 +175,7 @@ working days, and adaptable schedules are explicit requirements of the task.
 The Java sources compile under Java 17 with:
 
 ```powershell
-javac -Xlint:all -Werror -d bin (Get-ChildItem src\*.java).FullName
+javac --release 17 -Xlint:all -Werror -d bin (Get-ChildItem src\*.java).FullName
 ```
 
 The test scenarios cover validation failures, polymorphism, sorting, duplicate
