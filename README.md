@@ -68,6 +68,7 @@ Active appointments: 4
 - Bookings are for the current day only.
 - A professional must be available on the current day.
 - The same professional cannot be booked twice in the same time slot.
+- A professional who does not work on the current day cannot be booked.
 - The default schedule uses 30-minute slots from 08:00 through 16:00.
 - The last slot is inclusive, so 16:00 is the final bookable start time.
 - A clinic that must close exactly at 16:00 can pass 15:30 as its last slot.
@@ -133,6 +134,8 @@ also generate a reusable schedule list without creating a manager immediately.
   stored collection.
 - The scripted `main` demonstration uses arrays and loops so more test data can
   be added without duplicating the workflow.
+- The demonstration includes an unavailable professional so the current-day
+  availability warning is visible in the console output.
 - The assignment requires a scripted console demonstration rather than a menu,
   so this project does not contain a `Scanner`-driven interface.
 

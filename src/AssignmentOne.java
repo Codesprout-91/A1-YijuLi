@@ -36,10 +36,22 @@ public class AssignmentOne {
                 "3001", "Olivia Brown", workingDays, "Sports Nutrition");
         Specialist specialist = new Specialist(
                 "4001", "Dr Liam Nguyen", workingDays, "Paediatrics");
+        DayOfWeek tomorrow = LocalDate.now().getDayOfWeek().plus(1);
+        Specialist unavailableSpecialist = new Specialist(
+                "4002",
+                "Dr Jordan Lee",
+                EnumSet.of(tomorrow),
+                "Dermatology");
 
         // The base type lets the loop process any current or future professional type.
         HealthProfessional[] professionals = {
-                gpOne, gpTwo, gpThree, nurse, dietitian, specialist
+                gpOne,
+                gpTwo,
+                gpThree,
+                nurse,
+                dietitian,
+                specialist,
+                unavailableSpecialist
         };
         displayProfessionals(professionals);
 
@@ -85,6 +97,10 @@ public class AssignmentOne {
                 manager.getAppointmentsByPatientPhone(alice.getMobilePhone());
         System.out.println(manager.displayAppointments(filteredByPatient));
 
+        printSection("FILTER WITH NO MATCHING APPOINTMENTS");
+        System.out.println(manager.displayAppointments(
+                manager.getAppointmentsByPatientPhone("0499999999")));
+
         printSection("PART 6 - ERROR CASES");
         Patient duplicatePatient =
                 new Patient("Duplicate Request", "0467 890 123");
@@ -92,6 +108,15 @@ public class AssignmentOne {
                 duplicatePatient,
                 gpOne,
                 LocalTime.of(9, 0))));
+
+        printSection("UNAVAILABLE PROFESSIONAL");
+        Patient unavailablePatient =
+                new Patient("Unavailable Request", "0467 888 123");
+        System.out.println(manager.addAppointment(new Appointment(
+                unavailablePatient,
+                unavailableSpecialist,
+                LocalTime.of(12, 0))));
+
         System.out.println(
                 manager.cancelAppointment("9999", LocalTime.of(14, 0)));
 

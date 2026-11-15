@@ -221,7 +221,7 @@ public class AppointmentManager {
             List<Appointment> appointmentsToDisplay) {
         if (appointmentsToDisplay == null
                 || appointmentsToDisplay.isEmpty()) {
-            return "No appointments found.";
+            return "WARNING: No appointments found.";
         }
 
         StringBuilder output = new StringBuilder();
