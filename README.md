@@ -27,12 +27,16 @@ src/
   Appointment.java
   AppointmentManager.java
   AssignmentOne.java
+  ClinicSchedule.java
   Dietitian.java
   GeneralPractitioner.java
   HealthProfessional.java
   Nurse.java
   Patient.java
   Specialist.java
+  TimeSlot.java
+test/
+  A1ContractTest.java
 ```
 
 All source files are in the default package. There are no external
@@ -83,71 +87,40 @@ A1 CONTRACT TESTS PASSED
 
 ## Appointment rules
 
-- Bookings are for the current day only.
+- The scripted application uses `MONDAY` as a deterministic simulated current day.
 - A professional must be available on the current day.
 - The same professional cannot be booked twice in the same time slot.
 - A professional who does not work on the current day cannot be booked.
-- The default schedule uses 30-minute slots from 08:00 through 16:00.
-- The last slot is inclusive, so 16:00 is the final bookable start time.
-- A clinic that must close exactly at 16:00 can pass 15:30 as its last slot.
+- The clinic opens at 08:00 and closes at 16:00.
+- Bookable appointments start every 30 minutes from 08:00 through 15:30.
+- `16:00` is the closing time and is not a bookable start time.
 - Filtering is available by professional ID or patient phone number.
-- Cancellation by phone removes the patient's earliest matching appointment.
+- Phone-only cancellation succeeds when exactly one appointment matches.
+- Multiple matching appointments return an ambiguity warning.
 
-## Flexible schedules
+## Schedule design
 
-Three forms of schedule configuration are supported.
-
-### Default clinic schedule
-
-```java
-AppointmentManager manager = new AppointmentManager();
-```
-
-### Generated regular schedule
-
-```java
-AppointmentManager manager = new AppointmentManager(
-        LocalTime.of(9, 0),
-        LocalTime.of(17, 0),
-        20);
-```
-
-The arguments represent the first slot, last slot, and interval in minutes.
-The last slot is included.
-
-### Fully custom irregular schedule
-
-```java
-AppointmentManager manager = new AppointmentManager(List.of(
-        LocalTime.of(9, 0),
-        LocalTime.of(11, 0),
-        LocalTime.of(14, 30)));
-```
-
-This form supports lunch breaks, irregular opening hours, and special clinic
-days.
-
-`AppointmentManager.createSchedule(firstSlot, lastSlot, intervalMinutes)` can
-also generate a reusable schedule list without creating a manager immediately.
+`ClinicSchedule` is the single source of truth for the simulated current day
+and the fixed daily slots. It generates the half-hour schedule without
+hard-coding every time. `Appointment` validates its time against this shared
+schedule at construction time, so an invalid appointment cannot exist.
 
 ## Validation
 
 - Professional IDs accept ASCII digits `0-9` only.
 - Names cannot be blank.
-- Patient phone numbers are normalised to ten digits and must start with `0`.
+- Patient phone numbers are normalised to ten digits and must start with `04`.
+- Spaces and hyphens are removed before the phone number is stored.
 - Appointment patient, professional, and time values cannot be null.
-- Requested times must exist in the manager's schedule.
-- Zero or negative schedule intervals are rejected.
-- A last slot before the first slot is rejected.
-- A last slot that does not align with the interval is rejected.
+- Requested times must exist in `ClinicSchedule`.
 - Operations that cannot succeed return a warning instead of corrupting state.
 
 ## Design choices
 
 - The base `HealthProfessional` type allows new professional subclasses to be
   processed without changing appointment-management code.
-- Schedule validation is separate from appointment operations, so different
-  clinic hours do not require changes to filtering, sorting, or cancellation.
+- `ClinicSchedule` owns day names, current day, and time-slot generation, so
+  schedule changes are localized rather than repeated in every class.
 - Sorting works on a copy of the appointment list and preserves the manager's
   stored collection.
 - The scripted `main` demonstration uses arrays and loops so more test data can
@@ -159,16 +132,16 @@ also generate a reusable schedule list without creating a manager immediately.
 
 ## Java API choices
 
-The project uses only the Java 17 standard library and no third-party
-dependencies. The main API choices are:
+The project uses only `java.util.ArrayList` from the Java standard library and
+no third-party dependencies.
 
-- `LocalTime` and `LocalDate` provide validated time and current-day values.
-- `DayOfWeek` and `EnumSet` prevent duplicate or invalid working days.
-- `ArrayList`, `List`, and `Collections` provide collection and sorting support.
-- `Comparable` defines predictable appointment ordering.
-
-These types are used because time ordering, current-day bookings, unique
-working days, and adaptable schedules are explicit requirements of the task.
+- Working days are stored as validated uppercase `String` values.
+- `TimeSlot` is a custom immutable value object using integer hour and minute.
+- `ArrayList` stores working days, valid time slots, and appointments.
+- `Comparable` defines appointment and time-slot ordering.
+- Sorting uses a small insertion-sort loop instead of library sorting helpers.
+- The source does not use `java.time`, `EnumSet`, `StringBuilder`, `List`
+  interfaces, `Set` interfaces, or `Collections` utility methods.
 
 ## Verification
 
@@ -178,6 +151,7 @@ The Java sources compile under Java 17 with:
 javac --release 17 -Xlint:all -Werror -d bin (Get-ChildItem src\*.java).FullName
 ```
 
-The test scenarios cover validation failures, polymorphism, sorting, duplicate
-bookings, filtering, cancellation, custom schedules, and adding another health
-professional type.
+The test scenarios cover validation failures, polymorphism, sorting, schedule
+membership, duplicate bookings, filtering, phone-only cancellation,
+professional-and-time cancellation, unavailable professionals, and empty
+results.
