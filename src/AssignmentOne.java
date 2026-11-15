@@ -4,6 +4,9 @@ import java.util.ArrayList;
  * Runs the scripted demonstration for Assessment 1.
  */
 public class AssignmentOne {
+    /**
+     * Prevents creation of a demonstration utility object.
+     */
     private AssignmentOne() {
         // This class is used through its static main method.
     }
