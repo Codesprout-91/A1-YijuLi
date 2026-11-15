@@ -169,21 +169,6 @@ public abstract class HealthProfessional implements Comparable<HealthProfessiona
     }
 
     /**
-     * Creates the default Monday-to-Friday working days.
-     *
-     * @return default working days
-     */
-    protected static ArrayList<String> createWeekdays() {
-        ArrayList<String> days = new ArrayList<String>();
-        days.add(ClinicSchedule.MONDAY);
-        days.add(ClinicSchedule.TUESDAY);
-        days.add(ClinicSchedule.WEDNESDAY);
-        days.add(ClinicSchedule.THURSDAY);
-        days.add(ClinicSchedule.FRIDAY);
-        return days;
-    }
-
-    /**
      * Creates a Monday, Wednesday, Friday working-day list.
      *
      * @return Monday, Wednesday, Friday list
@@ -192,19 +177,6 @@ public abstract class HealthProfessional implements Comparable<HealthProfessiona
         ArrayList<String> days = new ArrayList<String>();
         days.add(ClinicSchedule.MONDAY);
         days.add(ClinicSchedule.WEDNESDAY);
-        days.add(ClinicSchedule.FRIDAY);
-        return days;
-    }
-
-    /**
-     * Creates a Monday, Thursday, Friday working-day list.
-     *
-     * @return Monday, Thursday, Friday list
-     */
-    protected static ArrayList<String> createMondayThursdayFriday() {
-        ArrayList<String> days = new ArrayList<String>();
-        days.add(ClinicSchedule.MONDAY);
-        days.add(ClinicSchedule.THURSDAY);
         days.add(ClinicSchedule.FRIDAY);
         return days;
     }
