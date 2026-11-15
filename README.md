@@ -1,4 +1,4 @@
-# A1-YijuLi
+# A1-yli197
 
 PROG2004 Object Oriented Programming - Assessment 1
 
@@ -61,6 +61,22 @@ The demonstration ends with:
 
 ```text
 Active appointments: 4
+```
+
+## Run the contract tests
+
+The repository includes a dependency-free Java test program:
+
+```powershell
+$mainSources = (Get-ChildItem src\*.java).FullName
+javac --release 17 -Xlint:all -Werror -d build $mainSources test\A1ContractTest.java
+java -cp build A1ContractTest
+```
+
+The expected final message is:
+
+```text
+A1 CONTRACT TESTS PASSED
 ```
 
 ## Appointment rules
@@ -138,6 +154,19 @@ also generate a reusable schedule list without creating a manager immediately.
   availability warning is visible in the console output.
 - The assignment requires a scripted console demonstration rather than a menu,
   so this project does not contain a `Scanner`-driven interface.
+
+## Java API choices
+
+The project uses only the Java 17 standard library and no third-party
+dependencies. The main API choices are:
+
+- `LocalTime` and `LocalDate` provide validated time and current-day values.
+- `DayOfWeek` and `EnumSet` prevent duplicate or invalid working days.
+- `ArrayList`, `List`, and `Collections` provide collection and sorting support.
+- `Comparable` defines predictable appointment ordering.
+
+These types are used because time ordering, current-day bookings, unique
+working days, and adaptable schedules are explicit requirements of the task.
 
 ## Verification
 
