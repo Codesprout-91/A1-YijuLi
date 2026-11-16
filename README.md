@@ -2,7 +2,7 @@
 
 PROG2004 Object Oriented Programming - Assessment 1
 
-Repository: https://github.com/Codesprout-91/A1-YijuLi
+Repository: https://github.com/Codesprout-91/A1-yli197
 
 This project is a console-based health appointment system written in Java. It
 demonstrates object-oriented design without a graphical interface, database,
